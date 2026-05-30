@@ -41,3 +41,6 @@ experiments/folktables/data/
 
 # Distribution
 *.tar.gz
+
+# Docs build output
+site/
