@@ -17,13 +17,6 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
-[project.urls]
-Homepage      = "https://github.com/Archit1706/relfair"
-Documentation = "https://archit1706.github.io/relfair"
-Repository    = "https://github.com/Archit1706/relfair"
-"Bug Tracker" = "https://github.com/Archit1706/relfair/issues"
-Changelog     = "https://archit1706.github.io/relfair/changelog/"
-
 # Core deps — kept minimal so the library is importable as a research artifact.
 # Phase 0 (counterfactual engine) + Phase 1 (LL 144 metrics) dependencies.
 dependencies = [
@@ -36,44 +29,41 @@ dependencies = [
     "dowhy>=0.11",
     "causal-learn>=0.1.3",
     "fairlearn>=0.10",
-    "scipy>=1.11",          # Fisher exact test, bootstrap stats
+    "scipy>=1.11",
 ]
 
+# project.urls must come AFTER all bare [project] keys in TOML
+[project.urls]
+Homepage      = "https://github.com/Archit1706/relfair"
+Documentation = "https://archit1706.github.io/relfair"
+Repository    = "https://github.com/Archit1706/relfair"
+"Bug Tracker" = "https://github.com/Archit1706/relfair/issues"
+Changelog     = "https://archit1706.github.io/relfair/changelog/"
+
 [project.optional-dependencies]
-# Development tooling
 dev = [
     "pytest>=8.0",
     "pytest-cov",
     "ruff",
     "mypy",
 ]
-
-# CLI entry point (relfair audit ...)
 cli = [
     "click>=8.1",
     "rich>=13",
 ]
-
-# PDF / HTML report generation
 report = [
     "weasyprint>=62",
     "jinja2>=3.1",
 ]
-
-# Benchmark experiments (not needed for the library itself)
 experiments = [
     "folktables>=0.0.12",
     "matplotlib>=3.8",
     "seaborn>=0.13",
     "jupyter",
 ]
-
-# Docs site
 docs = [
     "mkdocs-material>=9.5",
 ]
-
-# Everything
 all = [
     "relfair[dev,cli,report,experiments,docs]",
 ]
