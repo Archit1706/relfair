@@ -17,6 +17,13 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
 ]
 
+[project.urls]
+Homepage      = "https://github.com/Archit1706/relfair"
+Documentation = "https://archit1706.github.io/relfair"
+Repository    = "https://github.com/Archit1706/relfair"
+"Bug Tracker" = "https://github.com/Archit1706/relfair/issues"
+Changelog     = "https://archit1706.github.io/relfair/changelog/"
+
 # Core deps — kept minimal so the library is importable as a research artifact.
 # Phase 0 (counterfactual engine) + Phase 1 (LL 144 metrics) dependencies.
 dependencies = [
@@ -61,9 +68,14 @@ experiments = [
     "jupyter",
 ]
 
+# Docs site
+docs = [
+    "mkdocs-material>=9.5",
+]
+
 # Everything
 all = [
-    "relfair[dev,cli,report,experiments]",
+    "relfair[dev,cli,report,experiments,docs]",
 ]
 
 [project.scripts]
