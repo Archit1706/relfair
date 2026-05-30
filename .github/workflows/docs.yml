@@ -21,7 +21,7 @@ jobs:
           cache-dependency-path: pyproject.toml
 
       - name: Install docs deps
-        run: pip install "mkdocs-material>=9.5" "mkdocs-pymdownx-blocks"
+        run: pip install "mkdocs-material>=9.5"
 
       - name: Build and deploy to GitHub Pages
         run: mkdocs gh-deploy --force
