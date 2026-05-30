@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>LL 144 Bias Audit — {{ meta.employer | default("") }}</title>
+<style>
+/* ── Design tokens (FairLens brand) ─────────────────────────────────── */
+:root {
+  --bg:      #F5F1E8;
+  --panel:   #FCF8F2;
+  --ink:     #14130F;
+  --ink-2:   #4A463E;
+  --ink-3:   #8B867B;
+  --hair:    #D8D3C5;
+  --pass:    #2D5F3F;
+  --flag:    #B0411B;
+  --accent:  #B0411B;
+  --font-sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+}
+
+/* ── Reset + base ──────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 10pt; }
+body {
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--bg);
+  padding: 0;
+}
+
+/* ── Page layout (WeasyPrint) ──────────────────────────────────────────── */
+@page {
+  size: Letter;
+  margin: 22mm 22mm 25mm 22mm;
+  @bottom-center {
+    content: "FairLens · NYC Local Law 144 Bias Audit · Confidential · Page " counter(page) " of " counter(pages);
+    font-family: var(--font-sans);
+    font-size: 7.5pt;
+    color: var(--ink-3);
+  }
+}
+
+/* ── Typography ────────────────────────────────────────────────────────── */
+h1 { font-size: 18pt; font-weight: 600; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 4pt; }
+h2 { font-size: 11pt; font-weight: 600; color: var(--ink); margin: 16pt 0 6pt; border-bottom: 0.75pt solid var(--hair); padding-bottom: 3pt; }
+h3 { font-size: 9.5pt; font-weight: 600; color: var(--ink-2); margin: 10pt 0 4pt; }
+p  { font-size: 9pt; line-height: 1.5; color: var(--ink-2); margin-bottom: 5pt; }
+code { font-family: var(--font-mono); font-size: 8.5pt; }
+
+/* ── Header block ─────────────────────────────────────────────────────── */
+.report-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1.5pt solid var(--accent);
+  padding-bottom: 10pt;
+  margin-bottom: 14pt;
+}
+.report-header .logo-text {
+  font-size: 9pt;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.report-header .reg-badge {
+  font-size: 7.5pt;
+  color: var(--ink-3);
+  text-align: right;
+  line-height: 1.6;
+}
+
+/* ── Meta table ───────────────────────────────────────────────────────── */
+.meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4pt 20pt;
+  background: var(--panel);
+  border: 0.5pt solid var(--hair);
+  border-radius: 4pt;
+  padding: 10pt 14pt;
+  margin-bottom: 14pt;
+}
+.meta-grid .item label {
+  display: block;
+  font-size: 7.5pt;
+  font-weight: 600;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 2pt;
+}
+.meta-grid .item span {
+  font-size: 9pt;
+  color: var(--ink);
+}
+
+/* ── Summary row ──────────────────────────────────────────────────────── */
+.summary-row {
+  display: flex;
+  gap: 10pt;
+  margin-bottom: 14pt;
+}
+.stat-card {
+  flex: 1;
+  background: var(--panel);
+  border: 0.5pt solid var(--hair);
+  border-radius: 4pt;
+  padding: 8pt 10pt;
+  text-align: center;
+}
+.stat-card .value {
+  font-size: 18pt;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--ink);
+  display: block;
+}
+.stat-card .label {
+  font-size: 7.5pt;
+  color: var(--ink-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.stat-card.alert .value { color: var(--flag); }
+.stat-card.pass  .value { color: var(--pass); }
+
+/* ── Data tables ──────────────────────────────────────────────────────── */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8.5pt;
+  margin-bottom: 10pt;
+}
+thead tr {
+  background: var(--ink);
+  color: #FCF8F2;
+}
+thead th {
+  padding: 5pt 7pt;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+thead th:first-child { text-align: left; }
+tbody tr:nth-child(even) { background: var(--panel); }
+tbody tr:nth-child(odd)  { background: var(--bg); }
+tbody td {
+  padding: 5pt 7pt;
+  text-align: right;
+  font-family: var(--font-mono);
+  color: var(--ink-2);
+  border-bottom: 0.25pt solid var(--hair);
+}
+tbody td:first-child {
+  text-align: left;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  color: var(--ink);
+}
+.flag-cell  { color: var(--flag) !important; font-weight: 600; }
+.pass-cell  { color: var(--pass) !important; }
+.ref-cell   { color: var(--ink-3) !important; }
+.small-note { font-size: 7pt; color: var(--ink-3); }
+
+/* ── Intersectional heatmap table ─────────────────────────────────────── */
+.inter-table th, .inter-table td {
+  padding: 4pt 6pt;
+  font-size: 7.5pt;
+  text-align: center;
+}
+.inter-table td:first-child { text-align: left; font-family: var(--font-sans); }
+.cell-flag  { background: #F8E5E0; color: var(--flag); font-weight: 600; }
+.cell-pass  { background: #E5F0E9; color: var(--pass); }
+.cell-empty { color: var(--ink-3); }
+.cell-ref   { background: var(--panel); color: var(--ink-3); font-style: italic; }
+
+/* ── Section separators ───────────────────────────────────────────────── */
+.section { margin-bottom: 18pt; page-break-inside: avoid; }
+.finding-flag { color: var(--flag); font-weight: 600; }
+.finding-pass { color: var(--pass); }
+
+/* ── Footer / signature ───────────────────────────────────────────────── */
+.signature-block {
+  margin-top: 22pt;
+  border-top: 0.75pt solid var(--hair);
+  padding-top: 10pt;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 30pt;
+  font-size: 8.5pt;
+}
+.signature-block .sig-line {
+  border-top: 0.5pt solid var(--ink-2);
+  margin-top: 20pt;
+  padding-top: 3pt;
+  color: var(--ink-2);
+}
+</style>
+</head>
+<body>
+
+<!-- ── Report header ───────────────────────────────────────────────────── -->
+<div class="report-header">
+  <div>
+    <div class="logo-text">FairLens</div>
+    <h1>Annual Bias Audit Report</h1>
+    <p style="color:var(--ink-3); font-size:8.5pt;">
+      Prepared pursuant to NYC Admin Code §20-871 (Local Law 144 of 2021)
+    </p>
+  </div>
+  <div class="reg-badge">
+    NYC Local Law 144 / DCWP<br>
+    Automated Employment Decision Tool Audit<br>
+    {{ meta.audit_date | default("") }}
+  </div>
+</div>
+
+<!-- ── Employer / AEDT metadata ────────────────────────────────────────── -->
+<div class="meta-grid">
+  <div class="item"><label>Employer</label><span>{{ meta.employer | default("—") }}</span></div>
+  <div class="item"><label>AEDT Name &amp; Version</label><span>{{ meta.aedt_name | default("—") }}</span></div>
+  <div class="item"><label>Audit Period</label><span>{{ meta.cover_period | default("—") }}</span></div>
+  <div class="item"><label>Auditor</label><span>{{ meta.auditor | default("—") }}</span></div>
+  <div class="item"><label>Assessment Type</label><span>{{ result.outcome_type | title }} selection{% if result.outcome_type == "score" %} (threshold: {{ "%.2f"|format(result.threshold) }}){% endif %}</span></div>
+  <div class="item"><label>Report Date</label><span>{{ meta.audit_date | default("—") }}</span></div>
+</div>
+
+<!-- ── Summary statistics ───────────────────────────────────────────────── -->
+<div class="summary-row">
+  <div class="stat-card">
+    <span class="value">{{ "{:,}".format(result.n_total) }}</span>
+    <span class="label">Total applicants</span>
+  </div>
+  <div class="stat-card">
+    <span class="value">{{ "{:,}".format(result.n_selected) }}</span>
+    <span class="label">Selected / above threshold</span>
+  </div>
+  <div class="stat-card">
+    <span class="value">{{ "%.1f%%"|format(result.overall_rate * 100) }}</span>
+    <span class="label">Overall selection rate</span>
+  </div>
+  {% set n_flags_sex   = result.by_sex   | selectattr("four_fifths_flag") | list | length %}
+  {% set n_flags_race  = result.by_race  | selectattr("four_fifths_flag") | list | length %}
+  {% set n_flags_inter = result.intersectional | selectattr("four_fifths_flag") | list | length %}
+  {% set total_flags   = n_flags_sex + n_flags_race + n_flags_inter %}
+  <div class="stat-card {% if total_flags > 0 %}alert{% else %}pass{% endif %}">
+    <span class="value">{{ total_flags }}</span>
+    <span class="label">Four-fifths flags</span>
+  </div>
+</div>
+
+<!-- ── Section 1: Selection rates by sex ────────────────────────────────── -->
+<div class="section">
+<h2>§5-303(a) — Selection rates by sex</h2>
+<p>Impact ratio = group selection rate ÷ highest group selection rate.
+   A ratio below 0.80 triggers the four-fifths adverse impact threshold.</p>
+<table>
+  <thead>
+    <tr>
+      <th>Sex category</th>
+      <th>Applicants</th>
+      <th>Selected</th>
+      <th>Rate</th>
+      <th>Impact ratio</th>
+      <th>95% CI</th>
+      <th>p-value</th>
+      <th>4/5 Rule</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for s in result.by_sex %}
+    <tr>
+      <td>{{ s.group }}{% if s.is_reference %} <span class="ref-cell">(ref)</span>{% endif %}</td>
+      <td>{{ "{:,}".format(s.n) }}{% if s.small_sample %} <span class="small-note">⚠</span>{% endif %}</td>
+      <td>{{ "{:,}".format(s.selected) }}</td>
+      <td>{{ "%.1f%%"|format(s.rate * 100) }}</td>
+      <td class="{% if s.four_fifths_flag %}flag-cell{% elif s.is_reference %}ref-cell{% else %}pass-cell{% endif %}">
+        {{ "%.3f"|format(s.ratio) }}
+      </td>
+      <td>[{{ "%.3f"|format(s.ratio_ci_lo) }}, {{ "%.3f"|format(s.ratio_ci_hi) }}]</td>
+      <td>{% if s.p_value is not none %}{{ "%.4f"|format(s.p_value) }}{% else %}—{% endif %}</td>
+      <td class="{% if s.four_fifths_flag %}flag-cell{% else %}pass-cell{% endif %}">
+        {% if s.four_fifths_flag %}FLAG{% else %}PASS{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if result.by_sex | selectattr("small_sample") | list %}
+<p class="small-note">⚠ Groups with fewer than 30 applicants — impact ratios may be unreliable. Exercise caution when interpreting flags for these groups.</p>
+{% endif %}
+</div>
+
+<!-- ── Section 2: Selection rates by race / ethnicity ───────────────────── -->
+<div class="section">
+<h2>§5-303(a) — Selection rates by race / ethnicity</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Race / ethnicity</th>
+      <th>Applicants</th>
+      <th>Selected</th>
+      <th>Rate</th>
+      <th>Impact ratio</th>
+      <th>95% CI</th>
+      <th>p-value</th>
+      <th>4/5 Rule</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for s in result.by_race %}
+    <tr>
+      <td>{{ s.group }}{% if s.is_reference %} <span class="ref-cell">(ref)</span>{% endif %}</td>
+      <td>{{ "{:,}".format(s.n) }}{% if s.small_sample %} <span class="small-note">⚠</span>{% endif %}</td>
+      <td>{{ "{:,}".format(s.selected) }}</td>
+      <td>{{ "%.1f%%"|format(s.rate * 100) }}</td>
+      <td class="{% if s.four_fifths_flag %}flag-cell{% elif s.is_reference %}ref-cell{% else %}pass-cell{% endif %}">
+        {{ "%.3f"|format(s.ratio) }}
+      </td>
+      <td>[{{ "%.3f"|format(s.ratio_ci_lo) }}, {{ "%.3f"|format(s.ratio_ci_hi) }}]</td>
+      <td>{% if s.p_value is not none %}{{ "%.4f"|format(s.p_value) }}{% else %}—{% endif %}</td>
+      <td class="{% if s.four_fifths_flag %}flag-cell{% else %}pass-cell{% endif %}">
+        {% if s.four_fifths_flag %}FLAG{% else %}PASS{% endif %}
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if result.by_race | selectattr("small_sample") | list %}
+<p class="small-note">⚠ Small-sample warning applies to flagged groups above.</p>
+{% endif %}
+</div>
+
+<!-- ── Section 3: Intersectional (§5-303(b)) ────────────────────────────── -->
+<div class="section">
+<h2>§5-303(b) — Intersectional impact ratios (sex × race)</h2>
+<p>Each cell shows the impact ratio relative to the highest-rate sex × race combination.
+   Cells below 0.80 are flagged in orange-red.</p>
+{% set sex_groups  = result.intersectional | map(attribute="sex")  | unique | list | sort %}
+{% set race_groups = result.intersectional | map(attribute="race") | unique | list | sort %}
+<table class="inter-table">
+  <thead>
+    <tr>
+      <th>Sex ╲ Race</th>
+      {% for rc in race_groups %}<th>{{ rc }}</th>{% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+  {% for sx in sex_groups %}
+    <tr>
+      <td>{{ sx }}</td>
+      {% for rc in race_groups %}
+        {% set cell = result.intersectional | selectattr("sex","==",sx) | selectattr("race","==",rc) | first %}
+        {% if cell %}
+          {% if cell.n == 0 %}
+            <td class="cell-empty">—</td>
+          {% elif cell.ratio >= 1.0 - 0.0001 %}
+            <td class="cell-ref">{{ "%.3f"|format(cell.ratio) }}</td>
+          {% elif cell.four_fifths_flag %}
+            <td class="cell-flag">{{ "%.3f"|format(cell.ratio) }}{% if cell.small_sample %} ⚠{% endif %}</td>
+          {% else %}
+            <td class="cell-pass">{{ "%.3f"|format(cell.ratio) }}{% if cell.small_sample %} ⚠{% endif %}</td>
+          {% endif %}
+        {% else %}
+          <td class="cell-empty">—</td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p class="small-note">Reference cell (1.000) = highest selection rate; ⚠ = fewer than 30 applicants in this cell.</p>
+</div>
+
+<!-- ── Section 4: Methodology ───────────────────────────────────────────── -->
+<div class="section">
+<h2>Methodology disclosure</h2>
+<h3>Selection / scoring rates</h3>
+<p>
+{% if result.outcome_type == "binary" %}
+Selection rate for each demographic group is computed as the number of individuals in that group who received a positive AEDT outcome (hired, advanced, etc.) divided by the total number of individuals in that group assessed by the AEDT.
+{% else %}
+Scoring rate for each demographic group is computed as the number of individuals in that group who received a score strictly above the sample median score ({{ "%.2f"|format(result.threshold) }}) divided by the total number of individuals in that group assessed by the AEDT.
+{% endif %}
+</p>
+<h3>Impact ratios</h3>
+<p>The impact ratio for a group is its selection/scoring rate divided by the rate of the highest-rate group in the same protected attribute. An impact ratio below 0.80 constitutes adverse impact under the four-fifths (4/5) rule as interpreted in the DCWP Final Rule (December 2022).</p>
+<h3>Confidence intervals</h3>
+<p>All impact ratio confidence intervals are 95% percentile bootstrap CIs computed with {{ meta.n_boot | default(2000) }} resamples. The bootstrap procedure resamples the full dataset (not group-level statistics) so that uncertainty in the reference group's rate is correctly propagated to all other groups. RNG seed: {{ meta.bootstrap_seed | default(0) }}.</p>
+<h3>Statistical significance</h3>
+<p>P-values for each non-reference group are computed via Fisher's exact test (two-sided) using a 2×2 contingency table of [selected / not selected] × [group / reference group]. A p-value below 0.05 indicates the selection-rate difference is unlikely to be due to chance. P-values are reported for informational purposes; LL 144 compliance determination is based on the four-fifths impact ratio criterion.</p>
+<h3>Small-sample flags</h3>
+<p>Groups with fewer than 30 applicants are flagged (⚠). Impact ratios for small groups are statistically unstable; findings for flagged small groups should be interpreted with caution.</p>
+{% if meta.methodology_note is defined %}
+<h3>Additional notes</h3>
+<p>{{ meta.methodology_note }}</p>
+{% endif %}
+</div>
+
+<!-- ── Signature block ──────────────────────────────────────────────────── -->
+<div class="signature-block">
+  <div>
+    <p><strong>Auditor declaration</strong></p>
+    <p>I certify that this audit was conducted in accordance with NYC Local Law 144 (2021) and applicable DCWP guidance. The methodology, data, and findings described in this report are accurate to the best of my knowledge.</p>
+    <div class="sig-line">{{ meta.auditor | default("") }} — Auditor</div>
+  </div>
+  <div>
+    <p><strong>Generated by</strong></p>
+    <p>FairLens — relationship-aware counterfactual fairness testing<br>
+    <code>relfair v{{ meta.relfair_version | default("0.1.0") }}</code><br>
+    Report generated: {{ meta.audit_date | default("") }}</p>
+    <div class="sig-line">{{ meta.employer | default("") }} — Employer representative</div>
+  </div>
+</div>
+
+</body>
+</html>
