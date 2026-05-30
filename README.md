@@ -2,7 +2,7 @@
 
 **Relationship-aware counterfactual fairness testing.**
 
-[![CI](https://github.com/Archit1706/relfair/actions/workflows/ci.yml/badge.svg)](https://github.com/Archit1706/relfair/actions/workflows/ci.yml)
+[![CI](https://github.com/Archit1706/relfair/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/Archit1706/relfair/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/relfair.svg)](https://pypi.org/project/relfair/)
 [![Python](https://img.shields.io/pypi/pyversions/relfair.svg)](https://pypi.org/project/relfair/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
