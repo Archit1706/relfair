@@ -71,7 +71,6 @@ def test_sample_batch_returns_correct_length(fitted_mechs, toy_df):
 
 def test_mechanism_learns_sex_income_direction(fitted_mechs):
     """Male income predictions should on average be higher than Female (data-driven)."""
-    rng = np.random.default_rng(99)
     male_samples = [fitted_mechs.sample("income_k", {"sex": "M"}, np.random.default_rng(i)) for i in range(50)]
     female_samples = [fitted_mechs.sample("income_k", {"sex": "F"}, np.random.default_rng(1000 + i)) for i in range(50)]
     assert np.mean(male_samples) > np.mean(female_samples)

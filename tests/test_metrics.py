@@ -14,7 +14,6 @@ import pytest
 from relfair.metrics import (
     FOUR_FIFTHS_THRESHOLD,
     SMALL_SAMPLE_THRESHOLD,
-    GroupStat,
     LL144Result,
     compute_ll144_metrics,
     fisher_exact_pvalue,

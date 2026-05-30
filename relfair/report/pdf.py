@@ -12,9 +12,7 @@ raises ``ImportError`` with a clear install message.
 
 from __future__ import annotations
 
-import importlib
 from pathlib import Path
-from typing import Any
 
 from relfair.metrics.ll144 import LL144Result
 
