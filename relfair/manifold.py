@@ -35,7 +35,7 @@ class ManifoldFilter:
         self._num_cols: list[str] = []
 
     def fit(self, data: pd.DataFrame) -> None:
-        self._cat_cols = [c for c in data.columns if data[c].dtype == object]
+        self._cat_cols = [c for c in data.columns if not pd.api.types.is_numeric_dtype(data[c])]
         self._num_cols = [c for c in data.columns if c not in self._cat_cols]
 
         X = self._encode(data)

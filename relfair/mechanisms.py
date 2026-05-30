@@ -40,7 +40,11 @@ class _FittedMechanism:
 
 
 def _is_cat(col: str, data: pd.DataFrame, explicit: set[str]) -> bool:
-    return col in explicit or data[col].dtype == object or str(data[col].dtype) == "category"
+    dt = data[col].dtype
+    return (
+        col in explicit
+        or not pd.api.types.is_numeric_dtype(dt)
+    )
 
 
 def _build_pipeline(
