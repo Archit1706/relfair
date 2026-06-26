@@ -27,6 +27,8 @@ Reproduce: `cd experiments/<dataset> && python run.py`.
 
 A separate finding: `detect_constraint_violations()` has **100% recall** for hard-rule incoherences (a row with `sex=Female, relationship=Husband` never occurs in training data and must be off-manifold). IsolationForest flags ~7.5% of rows uniformly regardless of whether the violation is present — it cannot localise attribute-pair contradictions. Use the constraint check for hard rules; reserve the IsolationForest filter for soft distributional drift.
 
+![How relfair works](docs/architecture.png)
+
 ---
 
 ## Install
